@@ -1,30 +1,53 @@
 import React from 'react';
-import { AppRegistry, Component, Image, StyleSheet, Text, View } from 'react-native';
+import { AppRegistry, Component, Image,  ListView, StyleSheet, Text, View } from 'react-native';
 
-
-var MOCKED_MOVIES_DATA = [
-  {title: 'Title', year: '2015', posters: {thumbnail: 'http://i.imgur.com/UePbdph.jpg'}},
-];
 var REQUEST_URL = 'https://raw.githubusercontent.com/facebook/react-native/master/docs/MoviesExample.json';
+var API_KEY = '7waqfqbprs7pajbz28mqf6vz';
+var API_URL = 'http://api.rottentomatoes.com/api/public/v1.0/lists/movies/in_theaters.json';
+var PAGE_SIZE = 25;
+var PARAMS = '?apikey=' + API_KEY + '&page_limit=' + PAGE_SIZE;
+// var REQUEST_URL = API_URL + PARAMS;
 
 
 export default class App extends React.Component {
   constructor(props) {
     super(props); 
     this.state = {
-      movies: null,
+      dataSource: new ListView.DataSource({
+        rowHasChanged: (row1, row2) => row1 !== row2,
+      }),
+      loaded: false,
     };
   }
+
   componentDidMount() {
     this.fetchData();
   }
+
+  fetchData() {
+    fetch(REQUEST_URL)
+      .then((response) => response.json())
+      .then((responseData) => {
+        this.setState({
+          dataSource: this.state.dataSource.cloneWithRows(responseData.movies),
+          loaded: true,
+        });
+      })
+      .done();
+  }
+
   render() {
-    if (!this.state.movies) {
+    if (!this.state.loaded) {
       return this.renderLoadingView();
     }
 
-    var movie = this.state.movies[0];
-    return this.renderMovie(movie);
+    return (
+      <ListView
+        dataSource={this.state.dataSource}
+        renderRow={this.renderMovie}
+        style={styles.listView}
+      />
+    );
   }
 
   renderLoadingView() {
@@ -36,32 +59,23 @@ export default class App extends React.Component {
       </View>
     );
   }
-  
-    renderMovie(movie) {
-      return (
-        <View style={styles.container}>
-          <Image
-            source={{uri: movie.posters.thumbnail}}
-            style={styles.thumbnail}
-          />
-          <View style={styles.rightContainer}>
-            <Text style={styles.title}>{movie.title}</Text>
-            <Text style={styles.year}>{movie.year}</Text>
-          </View>
+
+  renderMovie(movie) {
+    return (
+      <View style={styles.container}>
+        <Image
+          source={{uri: movie.posters.thumbnail}}
+          style={styles.thumbnail}
+        />
+        <View style={styles.rightContainer}>
+          <Text style={styles.title}>{movie.title}</Text>
+          <Text style={styles.year}>{movie.year}</Text>
         </View>
-      );
-    }
-  fetchData() {
-    fetch(REQUEST_URL)
-      .then((response) => response.json())
-      .then((responseData) => {
-        this.setState({
-          movies: responseData.movies,
-        });
-      })
-      .done();
+      </View>
+    );
   }
 }
+
 var styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -70,12 +84,8 @@ var styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#F5FCFF',
   },
-  thumbnail: {
-    width: 200,
-    height: 200,
-  },
-  rightContainer:{
-    flex:1,
+  rightContainer: {
+    flex: 1,
   },
   title: {
     fontSize: 20,
@@ -84,5 +94,13 @@ var styles = StyleSheet.create({
   },
   year: {
     textAlign: 'center',
+  },
+  thumbnail: {
+    width: 53,
+    height: 81,
+  },
+  listView: {
+    paddingTop: 20,
+    backgroundColor: '#F5FCFF',
   },
 });
