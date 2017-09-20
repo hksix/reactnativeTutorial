@@ -2,12 +2,9 @@ import React from 'react';
 import { AppRegistry, Component, Image,  ListView, StyleSheet, Text, View } from 'react-native';
 
 var REQUEST_URL = 'https://raw.githubusercontent.com/facebook/react-native/master/docs/MoviesExample.json';
-var API_KEY = '7waqfqbprs7pajbz28mqf6vz';
-var API_URL = 'http://api.rottentomatoes.com/api/public/v1.0/lists/movies/in_theaters.json';
 var PAGE_SIZE = 25;
-var PARAMS = '?apikey=' + API_KEY + '&page_limit=' + PAGE_SIZE;
-// var REQUEST_URL = API_URL + PARAMS;
 
+import ButtonBasics from './Button' 
 
 export default class App extends React.Component {
   constructor(props) {
@@ -28,6 +25,7 @@ export default class App extends React.Component {
     fetch(REQUEST_URL)
       .then((response) => response.json())
       .then((responseData) => {
+        console.log(responseData)
         this.setState({
           dataSource: this.state.dataSource.cloneWithRows(responseData.movies),
           loaded: true,
@@ -42,11 +40,15 @@ export default class App extends React.Component {
     }
 
     return (
+      <View>
+      <ButtonBasics />
+      
       <ListView
         dataSource={this.state.dataSource}
         renderRow={this.renderMovie}
         style={styles.listView}
       />
+      </View>
     );
   }
 
@@ -59,9 +61,18 @@ export default class App extends React.Component {
       </View>
     );
   }
+  // renderButton(){
+  //   return(
+  //     <View>
+  //     <ButtonBasics />
+  //     </View>
+  //   )
+  // }
 
   renderMovie(movie) {
     return (
+      
+        
       <View style={styles.container}>
         <Image
           source={{uri: movie.posters.thumbnail}}
